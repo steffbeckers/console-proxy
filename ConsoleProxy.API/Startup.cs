@@ -16,35 +16,59 @@ namespace ConsoleProxy.API
 {
     public class Startup
     {
+        public readonly IConfiguration configuration;
+
         public Startup(IConfiguration configuration)
         {
-            Configuration = configuration;
+            this.configuration = configuration;
         }
 
-        public IConfiguration Configuration { get; }
-
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
             services.AddControllers();
+
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "ConsoleProxy.API", Version = "v1" });
+                c.SwaggerDoc("v2", new OpenApiInfo
+                {
+                    Version = "v2",
+                    Title = "ConsoleProxy.API",
+                    Contact = new OpenApiContact
+                    {
+                        Name = "Steff Beckers",
+                        Email = "steff@steffbeckers.eu",
+                        Url = new Uri("https://steffbeckers.eu")
+                    }
+                });
+
+                c.SwaggerDoc("v1", new OpenApiInfo {
+                    Version = "v1",
+                    Title = "ConsoleProxy.API",
+                    Contact = new OpenApiContact
+                    {
+                        Name = "Steff Beckers",
+                        Email = "steff@steffbeckers.eu",
+                        Url = new Uri("https://steffbeckers.eu")
+                    }
+                });
             });
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
-                app.UseDeveloperExceptionPage();
-                app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "ConsoleProxy.API v1"));
+                app.UseDeveloperExceptionPage();                
             }
 
             app.UseHttpsRedirection();
+
+            app.UseSwagger();
+
+            app.UseSwaggerUI(c => {
+                c.SwaggerEndpoint("/swagger/v2/swagger.json", "ConsoleProxy.API V2");
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "ConsoleProxy.API V1");
+            });
 
             app.UseRouting();
 
