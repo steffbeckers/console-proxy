@@ -1,6 +1,6 @@
-name: consoleproxy
-namespace: consoleproxy
-registry: registry.steffbeckers.eu
+name: console-proxy
+namespace: console-proxy
+registry: registry.steffbeckers.eu/console-proxy
 services:
-- name: api
-  project: ConsoleProxy.API/ConsoleProxy.API.csproj
+  - name: api
+    project: ConsoleProxy.API/ConsoleProxy.API.csproj
