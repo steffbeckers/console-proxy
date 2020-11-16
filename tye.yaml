@@ -4,3 +4,5 @@ registry: registry.steffbeckers.eu/console-proxy
 services:
   - name: api
     project: ConsoleProxy.API/ConsoleProxy.API.csproj
+    env:
+      - API=https://console.steffbeckers.eu/api

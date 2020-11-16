@@ -9,24 +9,29 @@ namespace ConsoleProxy.API.Controllers.V2
 {
     [ApiController]
     [ApiExplorerSettings(GroupName = "v2")]
-    [Route("api/v2")]
-    public class APIController : ControllerBase
+    [Route("api/v2/consoles")]
+    public class ConsolesController : ControllerBase
     {
         private readonly string api;
 
-        public APIController(IConfiguration configuration)
+        public ConsolesController(IConfiguration configuration)
         {
-            this.api = configuration.GetValue<string>("API") + "/v2";
+            this.api = configuration.GetValue<string>("API") + "/v2/consoles";
         }
 
         [HttpGet]
         public IActionResult List()
         {
             return Ok(new string[] {
-                api + "/commands",
-                api + "/consoles",
-                api + "/webhooks"
+                api + "/list",
             });
+        }
+
+        [HttpGet]
+        [Route("list")]
+        public IActionResult ConnectedConsoles()
+        {
+            return Ok("connected consoles");
         }
     }
 }

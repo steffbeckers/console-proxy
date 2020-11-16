@@ -23,16 +23,9 @@ namespace ConsoleProxy.API.Controllers.V2
         public IActionResult List()
         {
             return Ok(new string[] {
-                api + "/test",
-                api + "/ping"
+                api + "/ping",
+                api + "/test"
             });
-        }
-
-        [HttpGet]
-        [Route("test")]
-        public IActionResult Test()
-        {
-            return Ok("test");
         }
 
         [HttpGet]
@@ -40,6 +33,13 @@ namespace ConsoleProxy.API.Controllers.V2
         public IActionResult Ping()
         {
             return Ok("ping");
+        }
+
+        [HttpGet]
+        [Route("test")]
+        public IActionResult Test()
+        {
+            return Ok("test");
         }
     }
 }
