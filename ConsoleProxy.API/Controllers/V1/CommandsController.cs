@@ -1,8 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using ConsoleProxy.API.Hubs;
+using ConsoleProxy.Commands;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ConsoleProxy.API.Controllers.V1
@@ -12,26 +16,21 @@ namespace ConsoleProxy.API.Controllers.V1
     [Route("api/v1/commands")]
     public class CommandsController : ControllerBase
     {
-        private readonly string api;
+        private readonly IHubContext<RealtimeHub> _realtimeHub;
 
-        public CommandsController(IConfiguration configuration)
+        public CommandsController(IHubContext<RealtimeHub> realtimeHub)
         {
-            this.api = configuration.GetValue<string>("API") + "/v1/commands";
+            _realtimeHub = realtimeHub;
         }
 
-        [HttpGet]
-        public IActionResult List()
+        [HttpPost("open-explorer")]
+        public async Task<IActionResult> OpenExplorer(
+            OpenExplorer command,
+            CancellationToken cancellationToken
+        )
         {
-            return Ok(new string[] {
-                api + "/test"
-            });
-        }
-
-        [HttpGet]
-        [Route("test")]
-        public IActionResult Test()
-        {
-            return Ok("test");
+            await _realtimeHub.Clients.All.SendAsync("ExecuteCommand", command, cancellationToken);
+            return Ok();
         }
     }
 }

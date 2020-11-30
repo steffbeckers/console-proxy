@@ -1,0 +1,94 @@
+using ConsoleProxy.Commands;
+using MediatR;
+using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace ConsoleProxy
+{
+    public class RealtimeClient : BackgroundService
+    {
+        private readonly IConfiguration _configuration;
+        private readonly ILogger<RealtimeClient> _logger;
+        private readonly IMediator _mediator;
+        private HubConnection _realtimeConnection;
+
+        public RealtimeClient(
+            IConfiguration configuration,
+            ILogger<RealtimeClient> logger,
+            IMediator mediator
+        )
+        {
+            _configuration = configuration;
+            _logger = logger;
+            _mediator = mediator;
+        }
+
+        protected override async Task ExecuteAsync(CancellationToken cancellationToken)
+        {
+            while (!cancellationToken.IsCancellationRequested && (this._realtimeConnection == null || this._realtimeConnection.State == HubConnectionState.Disconnected))
+            {
+                // Setup a connection to the realtime hub
+                this._realtimeConnection = new HubConnectionBuilder()
+                    .WithUrl(_configuration.GetValue<string>("API") + "/realtime-hub")
+                    .WithAutomaticReconnect()
+                    .Build();
+
+                // When the connection is closed
+                this._realtimeConnection.Closed += async (ex) =>
+                {
+                    _logger.LogError("Lost realtime connection");
+                    if (ex != null)
+                        _logger.LogError(ex.ToString());
+
+                    await Task.CompletedTask;
+                };
+
+                this._realtimeConnection.On("ExecuteCommand", async (IRequest command, CancellationToken commandCancellationToken) =>
+                {
+                    try
+                    {
+                        _logger.LogInformation("ExecuteCommand", command.ToString());
+                        await _mediator.Send(command, commandCancellationToken);
+                    }
+                    catch (Exception ex)
+                    {
+                        if (ex != null)
+                            _logger.LogError(ex.Message, ex);
+                    }
+                });
+
+                // Start initial realtime connection
+                await Connect();
+
+                // Keep client alive
+                await Task.Delay(10000, cancellationToken);
+            }
+        }
+
+        private async Task Connect()
+        {
+            try
+            {
+                // Don't connect again if already connected
+                if (this._realtimeConnection.State == HubConnectionState.Disconnected)
+                {
+                    _logger.LogInformation("Connecting to realtime hub...");
+                    await this._realtimeConnection.StartAsync();
+                }
+
+                if (this._realtimeConnection.State == HubConnectionState.Connected)
+                    _logger.LogInformation("Connected.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Not able to connect. Is the API up and running? " + _configuration.GetValue<string>("API"));
+                _logger.LogError(ex.ToString());
+            }
+        }
+    }
+}

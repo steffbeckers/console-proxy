@@ -1,3 +1,4 @@
+using ConsoleProxy.API.Hubs;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -25,22 +26,14 @@ namespace ConsoleProxy.API
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddCors();
+
+            services.AddSignalR();
+
             services.AddControllers();
 
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v2", new OpenApiInfo
-                {
-                    Version = "v2",
-                    Title = "ConsoleProxy.API",
-                    Contact = new OpenApiContact
-                    {
-                        Name = "Steff Beckers",
-                        Email = "steff@steffbeckers.eu",
-                        Url = new Uri("https://steffbeckers.eu")
-                    }
-                });
-
                 c.SwaggerDoc("v1", new OpenApiInfo {
                     Version = "v1",
                     Title = "ConsoleProxy.API",
@@ -61,22 +54,30 @@ namespace ConsoleProxy.API
                 app.UseDeveloperExceptionPage();                
             }
 
+            app.UseCors(options =>
+            {
+                options.AllowAnyOrigin()
+                    .AllowAnyMethod()
+                    .AllowAnyHeader();
+            });
+
             app.UseHttpsRedirection();
+
+            app.UseRouting();
 
             app.UseSwagger();
 
             app.UseSwaggerUI(c => {
-                c.SwaggerEndpoint("/swagger/v2/swagger.json", "ConsoleProxy.API V2");
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "ConsoleProxy.API V1");
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Console Proxy API V1");
             });
-
-            app.UseRouting();
 
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                // Realtime
+                endpoints.MapHub<RealtimeHub>("/api/realtime-hub");
             });
         }
     }

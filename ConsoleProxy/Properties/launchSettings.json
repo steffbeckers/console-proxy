@@ -1,6 +1,6 @@
 ﻿{
   "profiles": {
-    "ConsoleProxy.Console": {
+    "ConsoleProxy": {
       "commandName": "Project",
       "dotnetRunMessages": "true",
       "environmentVariables": {
