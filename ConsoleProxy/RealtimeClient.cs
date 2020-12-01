@@ -48,12 +48,36 @@ namespace ConsoleProxy
                     await Task.CompletedTask;
                 };
 
-                this._realtimeConnection.On("ExecuteCommand", async (IRequest command, CancellationToken commandCancellationToken) =>
+                // Executing commands
+                this._realtimeConnection.On("ExecuteCommand", async (ConsoleProxyCommand command) =>
                 {
                     try
                     {
-                        _logger.LogInformation("ExecuteCommand", command.ToString());
-                        await _mediator.Send(command, commandCancellationToken);
+                        _logger.LogInformation("Execute command: " + command.Name);
+
+                        Type commandType = Type.GetType("ConsoleProxy.Commands." + command.Name + ", ConsoleProxy.Commands");
+                        if (commandType == null)
+                        {
+                            _logger.LogError($"Command doesn't exist.");
+                            return;
+                        }
+
+                        IRequest commandRequest;
+                        if (command.Options != null)
+                        {
+                            commandRequest = Activator.CreateInstance(
+                                commandType,
+                                command.Options
+                            ) as IRequest;
+                        }
+                        else
+                        {
+                            commandRequest = Activator.CreateInstance(
+                               commandType
+                            ) as IRequest;
+                        }
+
+                        await _mediator.Send(commandRequest);
                     }
                     catch (Exception ex)
                     {

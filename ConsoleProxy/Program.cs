@@ -1,3 +1,4 @@
+using ConsoleProxy.Commands;
 using MediatR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -5,7 +6,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NLog.Web;
 using System;
-using System.Reflection;
 
 namespace ConsoleProxy
 {
@@ -43,7 +43,7 @@ namespace ConsoleProxy
                 .ConfigureServices((hostContext, services) =>
                 {
                     services.AddHostedService<RealtimeClient>();
-                    services.AddMediatR(Assembly.GetExecutingAssembly());
+                    services.AddMediatR(typeof(ConsoleProxyCommand));
                 })
                 .ConfigureLogging(options =>
                 {
