@@ -4,6 +4,14 @@
     <UserSecretsId>dotnet-ConsoleProxy-869A8400-3D08-43BC-A20A-A610847FB2B0</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Dockerfile" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Dockerfile">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="MediatR" Version="9.0.0" />
     <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="9.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="5.0.0" />
