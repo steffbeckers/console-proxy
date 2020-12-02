@@ -35,7 +35,7 @@ namespace ConsoleProxy.API
             Host.CreateDefaultBuilder(args)
                 .ConfigureAppConfiguration(options =>
                 {
-                    options.AddEnvironmentVariables(prefix: "CP_");
+                    options.AddEnvironmentVariables();
                 })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {

@@ -1,11 +1,14 @@
 using ConsoleProxy.API.Hubs;
+using IdentityServer4.AccessTokenValidation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using System;
+using System.Collections.Generic;
 
 namespace ConsoleProxy.API
 {
@@ -20,15 +23,35 @@ namespace ConsoleProxy.API
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.Configure<ForwardedHeadersOptions>(options =>
+            {
+                options.ForwardedHeaders =
+                    ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+            });
+
             services.AddCors();
+
+            services.AddAuthentication(options =>
+            {
+                options.DefaultScheme = IdentityServerAuthenticationDefaults.AuthenticationScheme;
+                options.DefaultAuthenticateScheme = IdentityServerAuthenticationDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = IdentityServerAuthenticationDefaults.AuthenticationScheme;
+                options.DefaultSignInScheme = IdentityServerAuthenticationDefaults.AuthenticationScheme;
+                options.DefaultForbidScheme = IdentityServerAuthenticationDefaults.AuthenticationScheme;
+            })
+                .AddIdentityServerAuthentication(options =>
+                {
+                    options.Authority = configuration.GetValue<string>("IdentityServer");
+                    options.ApiName = "console-proxy.api";
+                });
 
             services.AddSignalR();
 
             services.AddControllers();
 
-            services.AddSwaggerGen(c =>
+            services.AddSwaggerGen(options =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo
+                options.SwaggerDoc("v1", new OpenApiInfo
                 {
                     Version = "v1",
                     Title = "ConsoleProxy.API",
@@ -39,11 +62,30 @@ namespace ConsoleProxy.API
                         Url = new Uri("https://steffbeckers.eu")
                     }
                 });
+
+                options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
+                {
+                    Type = SecuritySchemeType.OAuth2,
+                    Flows = new OpenApiOAuthFlows
+                    {
+                        AuthorizationCode = new OpenApiOAuthFlow
+                        {
+                            AuthorizationUrl = new Uri($"{configuration.GetValue<string>("IdentityServer")}/connect/authorize"),
+                            TokenUrl = new Uri($"{configuration.GetValue<string>("IdentityServer")}/connect/token"),
+                            Scopes = new Dictionary<string, string> {
+                                { "console-proxy.api", "Console Proxy API" }
+                            }
+                        }
+                    }
+                });
+                options.OperationFilter<AddAuthHeaderOperationFilter>();
             });
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseForwardedHeaders();
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -58,14 +100,19 @@ namespace ConsoleProxy.API
 
             app.UseHttpsRedirection();
 
-            app.UseRouting();
-
             app.UseSwagger();
 
-            app.UseSwaggerUI(c =>
+            app.UseSwaggerUI(options =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Console Proxy API V1");
+                options.SwaggerEndpoint("/swagger/v1/swagger.json", "Console Proxy API");
+                options.OAuthClientId("console-proxy.api");
+                options.OAuthAppName("Console Proxy API");
+                options.OAuthUsePkce();
             });
+
+            app.UseRouting();
+
+            app.UseAuthentication();
 
             app.UseAuthorization();
 

@@ -1,5 +1,6 @@
 ﻿using ConsoleProxy.API.Hubs;
 using ConsoleProxy.Commands;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
@@ -8,6 +9,7 @@ using System.Threading.Tasks;
 
 namespace ConsoleProxy.API.Controllers.V1
 {
+    [Authorize]
     [ApiController]
     [ApiExplorerSettings(GroupName = "v1")]
     [Route("api/v1/commands")]
