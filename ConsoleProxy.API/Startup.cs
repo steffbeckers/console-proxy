@@ -1,11 +1,18 @@
 using ConsoleProxy.API.Hubs;
+using ConsoleProxy.API.IdentityServer;
+using ConsoleProxy.API.SignalR;
+using ConsoleProxy.API.Swagger;
 using IdentityServer4.AccessTokenValidation;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using System;
 using System.Collections.Generic;
@@ -39,13 +46,17 @@ namespace ConsoleProxy.API
                 options.DefaultSignInScheme = IdentityServerAuthenticationDefaults.AuthenticationScheme;
                 options.DefaultForbidScheme = IdentityServerAuthenticationDefaults.AuthenticationScheme;
             })
-                .AddIdentityServerAuthentication(options =>
-                {
-                    options.Authority = configuration.GetValue<string>("IdentityServer");
-                    options.ApiName = "console-proxy.api";
-                });
+            .AddIdentityServerAuthentication(options =>
+            {
+                options.Authority = configuration.GetValue<string>("IdentityServer");
+                options.ApiName = "console-proxy.api";
+            });
+            services.TryAddEnumerable(
+                ServiceDescriptor.Singleton<IPostConfigureOptions<JwtBearerOptions>,
+                    ConfigureJwtBearerOptions>());
 
             services.AddSignalR();
+            services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
 
             services.AddControllers();
 

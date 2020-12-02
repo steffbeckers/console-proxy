@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -34,7 +35,8 @@ namespace ConsoleProxy.API.Controllers.V1
         )
         {
             _logger.LogInformation("Execute command: " + command.Name);
-            await _realtimeHub.Clients.All.SendAsync("ExecuteCommand", command, cancellationToken);
+            //await _realtimeHub.Clients.All.SendAsync("ExecuteCommand", command, cancellationToken);
+            await _realtimeHub.Clients.User(User.FindFirstValue("sub")).SendAsync("ExecuteCommand", command, cancellationToken);
             return Ok();
         }
     }

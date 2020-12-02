@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -11,6 +12,7 @@ namespace ConsoleProxy.API.Hubs
         public static List<string> ConnectedClients { get; set; } = new List<string>();
     }
 
+    [Authorize]
     public class RealtimeHub : Hub
     {
         public override Task OnConnectedAsync()
