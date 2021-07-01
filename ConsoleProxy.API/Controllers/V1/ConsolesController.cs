@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace ConsoleProxy.API.Controllers.V1
 {
-    [Authorize]
+    //[Authorize]
     [ApiController]
     [ApiExplorerSettings(GroupName = "v1")]
     [Route("api/v1/consoles")]

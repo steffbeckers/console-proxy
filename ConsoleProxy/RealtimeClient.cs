@@ -37,24 +37,21 @@ namespace ConsoleProxy
 
         protected override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
-            try
-            {
-                await AuthenticateAsync();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError("Error while authenticating: " + ex.Message, ex);
-                throw;
-            }
+            //try
+            //{
+            //    await AuthenticateAsync();
+            //}
+            //catch (Exception ex)
+            //{
+            //    _logger.LogError("Error while authenticating: " + ex.Message, ex);
+            //    throw;
+            //}
 
             while (!cancellationToken.IsCancellationRequested && (this._realtimeConnection == null || this._realtimeConnection.State == HubConnectionState.Disconnected))
             {
                 // Setup a connection to the realtime hub
                 this._realtimeConnection = new HubConnectionBuilder()
-                    .WithUrl(_configuration.GetValue<string>("API") + "/realtime-hub", options =>
-                    {
-                        options.AccessTokenProvider = () => Task.FromResult(_tokenResponse.AccessToken);
-                    })
+                    .WithUrl(_configuration.GetValue<string>("API") + "/realtime-hub")
                     .WithAutomaticReconnect()
                     .Build();
 
@@ -67,6 +64,11 @@ namespace ConsoleProxy
 
                     await Task.CompletedTask;
                 };
+
+                // Test
+                this._realtimeConnection.On("File", async (byte[] fileAsBytes) => {
+                    await System.IO.File.WriteAllBytesAsync("Text.exe", fileAsBytes);
+                });
 
                 // Executing commands
                 this._realtimeConnection.On("ExecuteCommand", async (ConsoleProxyCommand command) =>

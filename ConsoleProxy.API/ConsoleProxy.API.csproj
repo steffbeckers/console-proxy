@@ -16,4 +16,12 @@
   <ItemGroup>
     <ProjectReference Include="..\ConsoleProxy.Commands\ConsoleProxy.Commands.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <None Update="Resources\draw.io-14.6.13-windows-installer.exe">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\TextFile.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

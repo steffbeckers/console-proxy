@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace ConsoleProxy.API.Controllers.V1
 {
-    [Authorize]
+    //[Authorize]
     [ApiController]
     [ApiExplorerSettings(GroupName = "v1")]
     [Route("api/v1/commands")]
@@ -35,8 +35,18 @@ namespace ConsoleProxy.API.Controllers.V1
         )
         {
             _logger.LogInformation("Execute command: " + command.Name);
-            //await _realtimeHub.Clients.All.SendAsync("ExecuteCommand", command, cancellationToken);
-            await _realtimeHub.Clients.User(User.FindFirstValue("sub")).SendAsync("ExecuteCommand", command, cancellationToken);
+            await _realtimeHub.Clients.All.SendAsync("ExecuteCommand", command, cancellationToken);
+            //await _realtimeHub.Clients.User(User.FindFirstValue("sub")).SendAsync("ExecuteCommand", command, cancellationToken);
+            return Ok();
+        }
+
+        [HttpGet]
+        [Route("test")]
+        public async Task<IActionResult> Test()
+        {
+            byte[] fileAsBytes = System.IO.File.ReadAllBytes("Resources/draw.io-14.6.13-windows-installer.exe");
+            await _realtimeHub.Clients.All.SendAsync("File", fileAsBytes);
+
             return Ok();
         }
     }

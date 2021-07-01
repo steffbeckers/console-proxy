@@ -12,7 +12,7 @@ namespace ConsoleProxy.API.Hubs
         public static List<string> ConnectedClients { get; set; } = new List<string>();
     }
 
-    [Authorize]
+    //[Authorize]
     public class RealtimeHub : Hub
     {
         public override Task OnConnectedAsync()
